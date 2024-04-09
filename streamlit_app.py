@@ -1,8 +1,9 @@
 import streamlit as st
-from streamlit_option_menu import option_menu
+#from streamlit_option_menu import option_menu
 import streamlit_authenticator as stauth
-
 import sqlite3
+from streamlit_gsheets import GSheetsConnection
+import pandas as pd
 conn = sqlite3.connect('data.db')
 c = conn.cursor()
 
@@ -31,7 +32,7 @@ def main():
     st.title('Fall Guard')
 
     #menu
-    menu = ["Home", "Login", "SignUp", "About", "Falls"]
+    menu = ["Home", "Login", "SignUp", "Create Account", "About", "Falls"]
     choice = st.sidebar.selectbox("Menu", menu)
 
     if choice == "Home":
@@ -75,8 +76,20 @@ def main():
             add_userdata(new_user, new_password, new_email)
             st.success("You have successfully created an account")
             st.info("Go to Login menu to login")
+    
+    elif choice =="Create Account":
+        st.subheader("Create account with contact information")
+        #establishing a google sheets connection
+        conn = st.connection("gsheets", type=GSheetsConnection)
+        #fetch existing data
+        existing_data = conn.read(worksheet = "Fall Guard", usecols=list(range(3)), ttl = 5)
+        existing_data = existing_data.dropna(how="all")
+
+        with st.form(key = "login"):
+            first_name = st.text_input(label="First Name")
+            last_name = st.text_input(label="Last Name")
+            email_address = st.text_input(label="Email Address")
 
 
 if __name__ == '__main__':
     main()
-
